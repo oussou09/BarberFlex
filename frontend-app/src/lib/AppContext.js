@@ -20,7 +20,6 @@ export function AppProvider({ children }) {
   const [reservations, setReservations] = useState([]);
   const [loadingReserv, setLoadingReserv] = useState(false);
 
-
       // جلب البيانات مرة واحدة فقط عند إقلاع التطبيق
     const fetchInitialData = async () => {
         try {
@@ -35,14 +34,19 @@ export function AppProvider({ children }) {
         }
     };
 
+    const RefetchReservations = () => {
+      fetchInitialData();
+    };
+
     useEffect(() => {
         const token = localStorage.getItem('admin_token')
         if (token) {
           setIsAuthenticated(true)
         }
 
-        fetchInitialData()
+        fetchInitialData();
     }, [])
+
 
 
 
@@ -51,6 +55,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider
       value={{
         fetchInitialData,
+        RefetchReservations,
         reservations,
         loadingReserv,
         isAuthenticated,

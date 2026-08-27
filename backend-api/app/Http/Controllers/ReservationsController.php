@@ -29,9 +29,35 @@ class ReservationsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function StoreReservations(Request $request)
     {
-        //
+        if($request->isMethod('post')){
+
+            $validationData = $request->validate([
+                'full_name' => 'required|string|max:255',
+                'day' => 'required|integer',
+                'houre' => 'required|integer',
+                'phone' => 'required|string|max:20',
+                'email' => 'nullable|email',
+            ]);
+
+            try{
+
+                $reservation = Reservations::create($validationData);
+
+            return response()->json([
+                    'message' => 'Reservation stored successfully',
+                    'reservation' => $reservation,
+                ], 201);
+
+            }catch(\Exception $e){
+                return response()->json([
+                    'message' => 'Failed to store reservation',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+        }
     }
 
     /**

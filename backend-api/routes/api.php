@@ -19,3 +19,4 @@ Route::get('/getcontacts', [ContactController::class, 'GetContacts']);
 
 
 Route::get('/reservations', [ReservationsController::class, 'ReservationsReturn']);
+Route::post('/storereservations', [ReservationsController::class, 'StoreReservations']);

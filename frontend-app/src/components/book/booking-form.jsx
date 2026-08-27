@@ -28,14 +28,13 @@ const OPENING_HOURS = [
 
 export default function BookingForm() {
   const params = useSearchParams()
-  const { reservations = [] , loadingReserv = false } = useBarberApp()
+  const { reservations = [] , loadingReserv = false , RefetchReservations } = useBarberApp()
 
   const prefillDate = params.get('date')
   const prefillTime = params.get('time')
 
   const [days, setDays] = useState([])
-  const [confirmation, setConfirmation] = useState(null)
-  const [myBookings, setMyBookings] = useState([])
+  const [record, setRecord] = useState(null)
   const [serverError, setServerError] = useState('')
 
   const {
@@ -51,7 +50,7 @@ export default function BookingForm() {
     },
   } = useForm({
     defaultValues: {
-      name: '',
+      full_name: '',
       phone: '',
       email: '',
       date: prefillDate || '',
@@ -96,15 +95,15 @@ export default function BookingForm() {
     })
   }
 
+// Standardize selectedDate format (e.g., "2026-08-26" -> 20260826)
   const selectedDayNumber = selectedDate
-  ? Number(selectedDate.replaceAll('-', ''))
-  : null
+    ? parseInt(String(selectedDate).replaceAll('-', ''), 10)
+    : null
 
   const takenTimes = new Set(
     (reservations || [])
       .filter((reservation) => {
         const activeStatus = [
-          'pending',
           'confirmed',
         ].includes(
           String(reservation.status).toLowerCase()
@@ -118,41 +117,51 @@ export default function BookingForm() {
       .map((reservation) => Number(reservation.houre))
   )
 
-  async function onSubmit(data) {
+  const onSubmit = async (data) => {
     setServerError('')
+
+    data.date = parseInt(String(data.date).replaceAll('-', ''), 10)
+    data.time = parseInt(String(data.time), 10)
 
     try {
       await getCsrfCookie()
 
-      const response = await apiClient.post( '/reservations', data )
+      const response = await apiClient.post('/storereservations', {
+        ...data,
+        day: data.date,
+        houre: data.time,
+      })
 
-      const record = response.data.reservation || response.data
+      const reservationData = response.data?.reservation
+      setRecord(reservationData)
 
-      setConfirmation(record)
-
-      setMyBookings((previousBookings) => [
-        record,
-        ...previousBookings,
-      ])
+      console.log('Reservation response:', response)
+      console.log('Reservation record:', record)
+      console.log('Reservation data:', reservationData)
+      console.log('Reservation data:', data)
 
       reset({
-        name: '',
+        full_name: '',
         phone: '',
         email: '',
         date: data.date,
         time: '',
       })
+
+      RefetchReservations()
+
     } catch (error) {
       console.error('Reservation failed:', error)
+      console.log('Reservation data:', data)
 
       const status = error.response?.status
       const message = error.response?.data?.message
       const backendErrors = error.response?.data?.errors
 
-      if (backendErrors?.name?.[0]) {
-        setError('name', {
+      if (backendErrors?.full_name?.[0]) {
+        setError('full_name', {
           type: 'server',
-          message: backendErrors.name[0],
+          message: backendErrors.full_name[0],
         })
       }
 
@@ -305,7 +314,7 @@ export default function BookingForm() {
             reservations &&
             OPENING_HOURS.map((slot) => {
               const isTaken = takenTimes.has(slot.value)
-              const isSelected = slot.value === selectedTime
+              const isSelected = Number(slot.value) === Number(selectedTime)
 
               return (
                 <motion.button
@@ -379,7 +388,7 @@ export default function BookingForm() {
 
             <input
               type="text"
-              {...register('name', {
+              {...register('full_name', {
                 required: 'Full name is required.',
 
                 minLength: {
@@ -398,13 +407,13 @@ export default function BookingForm() {
                   'Full name cannot be empty.',
               })}
               placeholder="e.g. Amine Tazi"
-              aria-invalid={Boolean(errors.name)}
+              aria-invalid={Boolean(errors.full_name)}
               className="rounded-md border border-gray-300 bg-ink px-4 py-3 text-paper placeholder:text-gray-300 focus:border-paper focus:outline-none"
             />
 
-            {errors.name && (
+            {errors.full_name && (
               <p className="text-sm text-red-300">
-                {errors.name.message}
+                {errors.full_name.message}
               </p>
             )}
           </label>
@@ -535,7 +544,7 @@ export default function BookingForm() {
 
       {/* Confirmation */}
       <AnimatePresence>
-        {confirmation && (
+        {record?.id && (
           <motion.div
             initial={{
               opacity: 0,
@@ -558,46 +567,27 @@ export default function BookingForm() {
             </div>
 
             <dl className="mt-5 grid gap-2 text-sm sm:grid-cols-2">
-              <SummaryRow
-                label="Name"
-                value={confirmation.name}
-              />
-
-              <SummaryRow
-                label="Phone"
-                value={confirmation.phone}
-              />
-
-              {confirmation.email && (
-                <SummaryRow
-                  label="Email"
-                  value={confirmation.email}
-                />
-              )}
-
-              <SummaryRow
-                label="Date"
-                value={confirmation.date}
-              />
-
-              <SummaryRow
-                label="Time"
-                value={confirmation.time}
-              />
+              <SummaryRow label="Name" value={record.full_name} />
+              <SummaryRow label="Phone" value={record.phone} />
+              {record.email && <SummaryRow label="Email" value={record.email} />}
+              <SummaryRow label="Date" value={
+                record.day ? String(record.day).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3') : '—'
+              } />{/* {record.day} */}
+              <SummaryRow label="Time" value={`${record.houre}:00`} />
             </dl>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Local bookings */}
-      {myBookings.length > 0 && (
+      {/* Local bookings
+      {record?.id && (
         <section>
           <h3 className="font-display text-lg font-semibold uppercase tracking-wide text-paper">
             Your bookings this session
           </h3>
 
           <ul className="mt-4 flex flex-col gap-2">
-            {myBookings.map((booking) => (
+            {record.map((booking) => (
               <li
                 key={booking.id}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gray-300/50 px-4 py-3 text-sm text-gray-100"
@@ -611,14 +601,14 @@ export default function BookingForm() {
             ))}
           </ul>
         </section>
-      )}
+      )} */}
     </div>
   )
 }
 
 function SummaryRow({ label, value }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-gray-300/30 py-1">
+    <div className="flex flex-col justify-between gap-4 border-b border-gray-300/30 py-3">
       <dt className="text-gray-300">
         {label}
       </dt>

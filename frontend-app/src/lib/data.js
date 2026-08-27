@@ -8,6 +8,8 @@
  * // TODO: Replace with real API calls to Laravel backend.
  */
 
+
+
 // ---- In-memory stores (demo only) -----------------------------------------
 
 let reservations = [
@@ -134,20 +136,20 @@ export function getUpcomingDays(count = 7) {
 
 
 // TODO: Replace with real API call to Laravel backend.
-export function createReservation(reservation) {
-  const record = {
-    id: nextId('r'),
-    status: 'Confirmed',
-    ...reservation,
-  }
-  reservations = [record, ...reservations]
-  return record
-}
+// export function createReservation(reservation) {
+//   const record = {
+//     id: nextId('r'),
+//     status: 'Confirmed',
+//     ...reservation,
+//   }
+//   reservations = [record, ...reservations]
+//   return record
+// }
 
 // TODO: Replace with real API call to Laravel backend.
-export function getReservations() {
-  return [...reservations]
-}
+// export function getReservations() {
+//   return [...reservations]
+// }
 
 // TODO: Replace with real API call to Laravel backend.
 export function cancelReservation(id) {

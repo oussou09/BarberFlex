@@ -9,13 +9,13 @@ const backendUrl =
 
 if (!apiUrl) {
   throw new Error(
-    'NEXT_PUBLIC_API_URL is missing from .env.local'
+    'NEXT_PUBLIC_API_URL is missing from .env'
   )
 }
 
 if (!backendUrl) {
   throw new Error(
-    'NEXT_PUBLIC_NORMAL_API_URL is missing from .env.local'
+    'NEXT_PUBLIC_NORMAL_API_URL is missing from .env'
   )
 }
 
@@ -40,42 +40,18 @@ export const apiClient = axios.create({
   },
 })
 
-apiClient.interceptors.request.use(async (config) => {
-    const method = config.method?.toLowerCase();
+apiClient.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+  if (config.headers?.set) {
+    config.headers.set('Content-Type', undefined)
+  } else {
+    delete config.headers?.['Content-Type']
+    delete config.headers?.['content-type']
+  }
+  }
 
-    if (config.data instanceof FormData) {
-        if (config.headers?.set) {
-            config.headers.set('Content-Type', undefined);
-        } else {
-            delete config.headers?.['Content-Type'];
-            delete config.headers?.['content-type'];
-        }
-    }
-
-    // نتحقق من نوع الطلب
-    if (['post', 'put', 'patch', 'delete'].includes(method)) {
-        try {
-            const rootUrl = process.env.NEXT_PUBLIC_NORMAL_API_URL?.replace(/\/$/, '');
-
-            if (!rootUrl) {
-                throw new Error(
-                    'NEXT_PUBLIC_NORMAL_API_URL is missing or undefined'
-                );
-            }
-
-            const response = await axios.get(`${rootUrl}/sanctum/csrf-cookie`, {
-                withCredentials: true,
-            });
-
-            console.log('[Interceptor] CSRF cookie fetched', response.status);
-        } catch (error) {
-            console.error("%c[Interceptor] %cفشل جلب CSRF Cookie:", "color: blue; font-weight: bold", "color: red", error);
-        }
-    }
-    return config;
-}, (error) => {
-    return Promise.reject(error);
-});
+  return config
+}, (error) => Promise.reject(error))
 
 let isRedirecting = false;
 
