@@ -2,6 +2,8 @@
 import { Inter, Oswald } from 'next/font/google'
 import { AppProvider } from '../lib/AppContext'
 import './globals.css'
+import SwitchDarkLight from '../components/SwitchDarkLight'
+
 
 const inter = Inter({
   subsets: ['latin'],
@@ -28,9 +30,15 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${oswald.variable} bg-background`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${oswald.variable} bg-background`}>
       <body className="font-sans antialiased">
-        <AppProvider>{children}</AppProvider>
+
+            <AppProvider>
+              {children}
+              <div className="fixed bottom-5 right-5 z-50 p-4">
+                <SwitchDarkLight />
+              </div>
+            </AppProvider>
         {/* {process.env.NODE_ENV === 'production' && <Analytics />} */}
       </body>
     </html>

@@ -135,8 +135,6 @@ export default function BookingForm() {
       const reservationData = response.data?.reservation
       setRecord(reservationData)
 
-      console.log('Reservation response:', response)
-      console.log('Reservation record:', record)
       console.log('Reservation data:', reservationData)
       console.log('Reservation data:', data)
 
@@ -373,6 +371,7 @@ export default function BookingForm() {
         onSubmit={handleSubmit(onSubmit)}
         noValidate
         className="rounded-2xl border border-gray-300/50 bg-gray-700/40 p-6 sm:p-8"
+        method='POST'
       >
         <h2 className="font-display text-xl font-semibold uppercase tracking-wide text-paper">
           Your details

@@ -3,21 +3,47 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckIcon } from '../icons'
+import { useForm } from 'react-hook-form'
+import { apiClient, getCsrfCookie } from '../../lib/api'
 
 export default function ContactForm() {
-  const [form, setForm] = useState({ name: '', message: '' })
-  const [error, setError] = useState('')
   const [sent, setSent] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    setError,
+    formState: {
+      errors,
+      isSubmitting,
+    },
+  } = useForm({
+    defaultValues: {
+      full_name: '',
+      message: ''
+    },
 
-  function handleSubmit(e) {
-    e.preventDefault()
-    if (!form.name.trim() || !form.message.trim()) {
-      setError('Please fill in both your name and a message.')
-      return
-    }
-    setError('')
+    mode: 'onBlur',
+  })
+
+  const OnSubmit = async (data) => {
     // TODO: Replace with real API call to Laravel backend.
-    setSent(true)
+
+    try {
+    await getCsrfCookie()
+
+    const resp = await apiClient.post('/storecontact', data);
+
+    if(resp.status === 201){
+      console.log('Message sent successfully:', resp.data.message);
+      setSent(true)
+      reset()
+    }
+
+    } catch (error) {
+      console.error('Error sending message:', error)
+    }
   }
 
   if (sent) {
@@ -35,14 +61,11 @@ export default function ContactForm() {
           Message sent
         </h3>
         <p className="mt-2 text-gray-100">
-          Thanks, {form.name.split(' ')[0]}. We&apos;ll get back to you shortly.
+          Thanks for reaching out. We&apos;ll get back to you shortly.
         </p>
         <button
           type="button"
-          onClick={() => {
-            setForm({ name: '', message: '' })
-            setSent(false)
-          }}
+          onClick={() => setSent(false)}
           className="mt-6 rounded-md border border-gray-300 px-6 py-2.5 text-sm uppercase tracking-wider text-paper hover:bg-gray-700"
         >
           Send another
@@ -53,7 +76,7 @@ export default function ContactForm() {
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(OnSubmit)}
       className="rounded-2xl border border-gray-300/50 bg-gray-700/40 p-6 sm:p-8"
     >
       <h3 className="font-display text-2xl font-bold uppercase tracking-wide text-paper">
@@ -67,11 +90,32 @@ export default function ContactForm() {
           </span>
           <input
             type="text"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Your full name"
+            {...register('full_name', {
+              required: 'Full name is required.',
+
+              minLength: {
+                value: 2,
+                message:
+                  'Full name must contain at least 2 characters.',
+              },
+
+              maxLength: {
+                value: 100,
+                message: 'Full name is too long.',
+              },
+
+              validate: (value) =>
+                value.trim().length >= 2 ||
+                'Full name cannot be empty.',
+            })}
+            placeholder="e.g. Amine Tazi"
             className="rounded-md border border-gray-300 bg-ink px-4 py-3 text-paper placeholder:text-gray-300 focus:border-paper focus:outline-none"
-          />
+            />
+            {errors.full_name && (
+              <p className="text-sm text-red-300">
+                {errors.full_name.message}
+              </p>
+            )}
         </label>
 
         <label className="flex flex-col gap-2">
@@ -79,16 +123,31 @@ export default function ContactForm() {
             Message <span className="text-paper">*</span>
           </span>
           <textarea
-            rows={5}
-            value={form.message}
-            onChange={(e) => setForm({ ...form, message: e.target.value })}
+            type="text"
+            {...register('message', {
+              required: 'Message is required.',
+              minLength: {
+                value: 10,
+                message: 'Message must contain at least 10 characters.',
+              },
+              maxLength: {
+                value: 500,
+                message: 'Message is too long.',
+              },
+            })}
             placeholder="How can we help?"
+            rows={5}
             className="resize-none rounded-md border border-gray-300 bg-ink px-4 py-3 text-paper placeholder:text-gray-300 focus:border-paper focus:outline-none"
-          />
+            />
+            {errors.message && (
+              <p className="text-sm text-red-300">
+                {errors.message.message}
+              </p>
+            )}
         </label>
       </div>
 
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {error && (
           <motion.p
             initial={{ opacity: 0, y: -6 }}
@@ -99,13 +158,13 @@ export default function ContactForm() {
             {error}
           </motion.p>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
 
       <button
         type="submit"
         className="mt-6 w-full rounded-md bg-paper px-6 py-3.5 text-sm font-semibold uppercase tracking-wider text-ink transition-transform hover:scale-[1.02]"
       >
-        Send Message
+        {isSubmitting ? 'Sending...' : 'Send Message'}
       </button>
     </form>
   )

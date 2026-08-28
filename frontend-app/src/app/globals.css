@@ -45,6 +45,21 @@
   --primary-foreground: #000000;
 }
 
+:root[data-theme='light'] {
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #f2f2f2;
+  --card-foreground: #000000;
+  --muted: #e6e6e6;
+  --muted-foreground: #666666;
+  --border: #bfbfbf;
+  --input: #bfbfbf;
+  --ring: #404040;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+}
+
 @layer base {
   * {
     border-color: var(--border);
