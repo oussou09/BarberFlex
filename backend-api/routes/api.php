@@ -10,8 +10,9 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::prefix('wp-admin')->group(function () {
-    Route::post('/login', [AdminActionsController::class, 'LoginAdminPanel']);
+Route::post('/wp-admin/login', [AdminActionsController::class, 'LoginAdminPanel']);
+Route::prefix('wp-admin')->middleware(['auth:sanctum','abilities:role:admin'])->group(function () {
+    //admin csrf token route
 });
 
 Route::post('/storecontact', [ContactController::class, 'StoreContact']);

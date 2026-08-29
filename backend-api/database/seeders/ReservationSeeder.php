@@ -29,7 +29,7 @@ class ReservationSeeder extends Seeder
                 'full_name'  => $faker->name(),
                 'day'        => (int) $randomDate->format('Ymd'), // e.g., 20260819
                 'houre'      => $randomHour,                      // 10 to 22 (excluding 13, 14)
-                'phone'      => $faker->phoneNumber(),
+                'phone'      => fake()->numerify('+212[6-7]########'),
                 'email'      => $faker->optional(0.9)->safeEmail(), // 90% chance to populate
                 'status'     => $faker->randomElement(['confirmed', 'cancelled']),
                 'created_at' => now(),

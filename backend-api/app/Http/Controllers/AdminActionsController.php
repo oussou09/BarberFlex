@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminActions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password; // ✅
 
+// use Illuminate\Support\Facades\Password;
 class AdminActionsController extends Controller
 {
     /**
@@ -13,14 +16,26 @@ class AdminActionsController extends Controller
 
     public function LoginAdminPanel(Request $request)
     {
-        $email = $request->input('email');
-        $password = $request->input('password');
+        $DataValidator = $request->validate([
+            'email' => ['required', 'string', 'email', 'max:255', 'exists:admin_actions,email'],
+            'password' => ['required', 'string', Password::min(8)->letters()->numbers()],
+        ]);
 
-        if (empty($email) || empty($password)) {
-            return response()->json(['error' => 'Invalid request.'], 400);
+        $EmailAdmin = AdminActions::where('email', $DataValidator['email'])->first();
+
+        if (! $EmailAdmin || ! Hash::check($DataValidator['password'], $EmailAdmin->password)) {
+            return response()->json([
+                'message' => 'Invalid admin credentials',
+            ], 401);
         }
 
-        return response()->json(['success' => 'Admin login successful.'], 200);
+        $AdminToken = $EmailAdmin->createToken('admin_token', ['role:admin'])->plainTextToken;
+
+        return response()->json([
+            'message' => 'Admin login successful.',
+            'full_name' => $EmailAdmin->fullname,
+            'token' => $AdminToken,
+        ], 200);
     }
 
     /**
