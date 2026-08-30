@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminActions;
+use App\Models\Reservations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password; // ✅
+use Illuminate\Validation\Rules\Password;
 
 // use Illuminate\Support\Facades\Password;
 class AdminActionsController extends Controller
@@ -41,9 +42,23 @@ class AdminActionsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function handleCancelSlot(Request $request)
     {
-        //
+        $dataValidator = $request->validate(['SlotId'=>'required|exists:reservations,id']);
+
+        try {
+            $slot = Reservations::findOrFail($dataValidator['SlotId']);
+            $slot->delete();
+            return response()->json([
+                'message' => 'slot has been successfully cancelled'
+            ]);
+        }catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to cancel the slot',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

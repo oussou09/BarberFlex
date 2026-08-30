@@ -10,7 +10,7 @@ const SOCIALS = [
 export default function Footer() {
   return (
     <footer className="border-t border-gray-300/40 bg-ink">
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-5 py-10 sm:flex-row sm:justify-between">
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-5 py-6 sm:flex-row sm:justify-between">
         <div className="text-center sm:text-left">
           <p className="font-display text-xl font-bold tracking-widest text-paper">
             BARBER<span className="text-gray-100">FLEX</span>

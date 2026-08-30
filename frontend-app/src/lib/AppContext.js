@@ -49,6 +49,32 @@ export function AppProvider({ children }) {
 
 
 
+  const StoreAdminToken = (token) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('admin_token', token);
+    }
+  }
+
+  const GetAdminToken = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('admin_token');
+    }
+    return null
+  }
+
+
+// Check if an Admin Token exists
+  const CheckAdminToken = () => {
+    const token = GetAdminToken();
+    return Boolean(token && token.trim() !== '');
+  }
+
+  // Clear the Admin Token on Logout
+  const RemoveAdminToken = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('admin_token');
+    }
+  }
 
 
   return (
@@ -60,6 +86,11 @@ export function AppProvider({ children }) {
         loadingReserv,
         isAuthenticated,
         setIsAuthenticated,
+
+        // for the admin
+        StoreAdminToken,
+        CheckAdminToken,
+        RemoveAdminToken,
       }}
     >
       {children}

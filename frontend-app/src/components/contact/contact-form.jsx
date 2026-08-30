@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { CheckIcon } from '../icons'
 import { useForm } from 'react-hook-form'
 import { apiClient, getCsrfCookie } from '../../lib/api'
+import { toast } from 'sonner'
 
 export default function ContactForm() {
   const [sent, setSent] = useState(false)
@@ -28,21 +29,22 @@ export default function ContactForm() {
   })
 
   const OnSubmit = async (data) => {
-    // TODO: Replace with real API call to Laravel backend.
+    const toastId = toast.loading('جاري إرسال الرسالة...')
 
     try {
-    await getCsrfCookie()
+      await getCsrfCookie()
 
-    const resp = await apiClient.post('/storecontact', data);
+      const resp = await apiClient.post('/storecontact', data)
 
-    if(resp.status === 201){
-      console.log('Message sent successfully:', resp.data.message);
-      setSent(true)
-      reset()
-    }
-
+      if (resp.status === 201 || resp.status === 200) {
+        toast.success(resp.data.message || 'تم الإرسال بنجاح!', { id: toastId })
+        setSent(true)
+        reset()
+      }
     } catch (error) {
       console.error('Error sending message:', error)
+      const errorMessage = error.response?.data?.message || 'فشل إرسال الرسالة. يرجى المحاولة لاحقاً.'
+      toast.error(errorMessage, { id: toastId })
     }
   }
 

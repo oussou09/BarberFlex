@@ -1,24 +1,27 @@
+"use client";
+
 import Link from 'next/link'
-import { getReservations, getBlockedUsers } from '../../lib/data'
+import { useBarberApp } from '../../lib/AppContext'
 import { CalendarIcon, BanIcon, ArrowRightIcon } from '../../components/icons'
 
 export default function AdminHome() {
-  const reservations = getReservations()
-  const confirmed = reservations.filter((r) => r.status === 'Confirmed').length
-  const blocked = getBlockedUsers().length
+  const {reservations, loadingReserv} = useBarberApp()
+  const confirmed = reservations.filter((r) => r.status === 'confirmed').length
+  // const blocked = getBlockedUsers().length
 
   const cards = [
     {
-      href: '/admin/reservations',
+      href: '/wp-admin/reservations',
       label: 'Reservations',
       value: `${confirmed} confirmed`,
       sub: `${reservations.length} total`,
       Icon: CalendarIcon,
     },
     {
-      href: '/admin/blocked',
+      href: '/wp-admin/blocked',
       label: 'Blocked Users',
-      value: `${blocked} blocked`,
+      // value: `${blocked} blocked`,
+      value: `11 blocked`,
       sub: 'Manage access',
       Icon: BanIcon,
     },

@@ -15,6 +15,7 @@ const LINKS = [
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
+  console.log('Current pathname:', pathname) // Debugging line
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-300/40 bg-ink/80 backdrop-blur-md">
@@ -36,7 +37,7 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`text-sm uppercase tracking-wider transition-colors ${
-                  active ? 'text-paper' : 'text-gray-100 hover:text-paper'
+                  active ? 'text-paper border-b-1 border-solid border-white pb-0.5' : 'text-gray-100 hover:text-paper'
                 }`}
               >
                 {link.label}

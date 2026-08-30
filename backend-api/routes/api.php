@@ -13,6 +13,7 @@ Route::get('/user', function (Request $request) {
 Route::post('/wp-admin/login', [AdminActionsController::class, 'LoginAdminPanel']);
 Route::prefix('wp-admin')->middleware(['auth:sanctum','abilities:role:admin'])->group(function () {
     //admin csrf token route
+    Route::post('/cancelslot',[AdminActionsController::class, 'handleCancelSlot']);
 });
 
 Route::post('/storecontact', [ContactController::class, 'StoreContact']);

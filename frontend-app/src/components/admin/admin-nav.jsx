@@ -12,7 +12,7 @@ export default function AdminNav() {
   const pathname = usePathname()
   return (
     <header className="sticky top-0 z-40 border-b border-gray-300/40 bg-ink/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5">
+      <div className="mx-auto flex flex-col md:flex-row h-16 max-w-5xl items-center justify-between px-5">
         <Link
           href="/wp-admin"
           className="font-display text-xl font-bold tracking-widest text-paper"

@@ -3,6 +3,7 @@ import { Inter, Oswald } from 'next/font/google'
 import { AppProvider } from '../lib/AppContext'
 import './globals.css'
 import SwitchDarkLight from '../components/SwitchDarkLight'
+import { Toaster } from 'sonner'
 
 
 const inter = Inter({
@@ -38,6 +39,7 @@ export default function RootLayout({ children }) {
               <div className="fixed bottom-5 right-5 z-50 p-4">
                 <SwitchDarkLight />
               </div>
+              <Toaster position="bottom-right" richColors />
             </AppProvider>
         {/* {process.env.NODE_ENV === 'production' && <Analytics />} */}
       </body>

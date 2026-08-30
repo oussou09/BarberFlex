@@ -9,7 +9,7 @@ export default function AdminLayout({ children }) {
   return (
     <div className="min-h-screen bg-ink">
       <AdminNav />
-      <div className="mx-auto max-w-5xl px-5 py-10">{children}</div>
+      <div className="mx-auto max-w-6xl">{children}</div>
     </div>
   )
 }

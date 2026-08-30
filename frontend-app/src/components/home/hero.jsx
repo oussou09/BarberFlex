@@ -7,7 +7,7 @@ import { ArrowRightIcon } from '../icons'
 export default function Hero() {
   return (
     <section className="relative overflow-hidden bg-ink">
-      <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-6 md:grid-cols-2 md:py-10">
+      <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 pt-6 md:grid-cols-2 md:pt-10">
         {/* Left: text & CTAs */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -52,7 +52,7 @@ export default function Hero() {
           <img
             src="/barber-full.png"
             alt="Barbershop illustration with vintage mirror, bearded logo, and barber chair"
-            className="h-full w-full object-contain p-6"
+            className="h-full w-full object-contain p-2"
           />
         </motion.div>
       </div>
