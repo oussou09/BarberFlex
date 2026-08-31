@@ -20,7 +20,7 @@ const getFormattedDate = (offsetDays = 0) => {
 };
 
 export default function ReservationsPage() {
-  const {reservations, loadingReserv} = useBarberApp();
+  const {reservations = [], loadingReserv} = useBarberApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(0)
 
@@ -72,7 +72,43 @@ export default function ReservationsPage() {
     Manage upcoming bookings. Cancel any reservation that can&apos;t be honored.
   </p>
 
-  {reservations.length === 0 ? (
+  {loadingReserv ? (
+      // Loading skeleton for Reservations Table
+        <div className="mt-6 mb-10 overflow-hidden rounded-2xl border border-gray-300/50 sm:mt-8 sm:mb-16">
+          <div className="animate-pulse">
+            {/* Table Header Skeleton */}
+            <div className="border-b border-gray-300/40 bg-gray-700/40 px-4 py-3">
+              <div className="flex gap-4">
+                <div className="h-3 w-12 rounded bg-paper/20" />
+                <div className="h-3 w-20 rounded bg-paper/20" />
+                <div className="h-3 w-16 rounded bg-paper/20" />
+                <div className="h-3 w-14 rounded bg-paper/20" />
+                <div className="h-3 w-10 rounded bg-paper/20" />
+                <div className="h-3 w-16 rounded bg-paper/20" />
+                <div className="ml-auto h-3 w-12 rounded bg-paper/20" />
+                <div className="h-3 w-12 rounded bg-paper/20" />
+              </div>
+            </div>
+
+            {/* Table Rows Skeleton */}
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 border-b border-gray-300/20 px-4 py-3 last:border-0"
+              >
+                <div className="h-4 w-24 rounded bg-paper/10" />
+                <div className="h-4 w-32 rounded bg-paper/10" />
+                <div className="h-4 w-20 rounded bg-paper/10" />
+                <div className="h-4 w-16 rounded bg-paper/10" />
+                <div className="h-4 w-12 rounded bg-paper/10" />
+                <div className="h-6 w-20 rounded-full bg-paper/10" />
+                <div className="ml-auto h-8 w-20 rounded-md bg-paper/10" />
+                <div className="h-8 w-20 rounded-md bg-paper/10" />
+              </div>
+            ))}
+          </div>
+        </div>
+    ) : reservations.length === 0 ? (
     <p className="mt-8 rounded-2xl border border-gray-300/50 p-6 text-center text-sm text-gray-100 sm:mt-10 sm:p-8 sm:text-base">
       No reservations yet.
     </p>

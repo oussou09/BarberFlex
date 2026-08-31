@@ -1,3 +1,4 @@
+import AdminCsrfChecker from '../../components/admin/AdminCsrfChecker'
 import AdminNav from '../../components/admin/admin-nav'
 
 export const metadata = {
@@ -8,8 +9,12 @@ export const metadata = {
 export default function AdminLayout({ children }) {
   return (
     <div className="min-h-screen bg-ink">
-      <AdminNav />
-      <div className="mx-auto max-w-6xl">{children}</div>
+        <AdminCsrfChecker>
+          <AdminNav />
+          <div className="mx-auto max-w-6xl">
+            {children}
+          </div>
+        </AdminCsrfChecker>
     </div>
   )
 }

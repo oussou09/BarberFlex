@@ -12,6 +12,8 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/wp-admin/login', [AdminActionsController::class, 'LoginAdminPanel']);
 Route::prefix('wp-admin')->middleware(['auth:sanctum','abilities:role:admin'])->group(function () {
+    // verify the admin csrf token validation
+    Route::get('/verifytoken',[AdminActionsController::class, 'TokenValidator']);
     //admin csrf token route
     Route::post('/cancelslot',[AdminActionsController::class, 'handleCancelSlot']);
 });

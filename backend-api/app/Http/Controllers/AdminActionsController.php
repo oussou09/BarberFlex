@@ -40,7 +40,28 @@ class AdminActionsController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * check the csrf token is valid.
+     */
+    public function TokenValidator(Request $request)
+    {
+        try {
+            $admin = $request->user();
+            return response()->json([
+                'valid' => true,
+                'admin_name' => $admin->fullname,
+                'message' => 'Token is valid',
+            ], 200);
+        }catch (\Throwable $th) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'An error occurred during verification',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * handle the cancelation the slot.
      */
     public function handleCancelSlot(Request $request)
     {
@@ -73,14 +94,6 @@ class AdminActionsController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(AdminActions $adminActions)
     {
         //
     }

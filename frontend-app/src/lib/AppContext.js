@@ -5,7 +5,7 @@ import { apiClient } from "./api";
 
 const defaultContextValue = {
   reservations: [],
-  loadingReserv: false,
+  loadingReserv: true,
   isAuthenticated: false,
   user: null,
   fetchInitialData: async () => {},
@@ -18,7 +18,7 @@ const AppContext = createContext(defaultContextValue);
 export function AppProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [reservations, setReservations] = useState([]);
-  const [loadingReserv, setLoadingReserv] = useState(false);
+  const [loadingReserv, setLoadingReserv] = useState(true);
 
       // جلب البيانات مرة واحدة فقط عند إقلاع التطبيق
     const fetchInitialData = async () => {
@@ -49,6 +49,9 @@ export function AppProvider({ children }) {
 
 
 
+
+  // admin check token on requests
+
   const StoreAdminToken = (token) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('admin_token', token);
@@ -62,12 +65,29 @@ export function AppProvider({ children }) {
     return null
   }
 
-
 // Check if an Admin Token exists
   const CheckAdminToken = () => {
     const token = GetAdminToken();
-    return Boolean(token && token.trim() !== '');
+    return Boolean(token && token !== 'undefined' && token !== 'null' && token.trim() !== '');
   }
+
+const CheckAdminTokenServ = async () => {
+  try {
+    const token = localStorage.getItem('admin_token')
+    if (!token) return false
+
+    const resp = await apiClient.get('/wp-admin/verifytoken', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    if (resp.status === 200) {
+      return true
+    }
+  } catch (error) {
+    RemoveAdminToken()
+    throw error
+  }
+}
 
   // Clear the Admin Token on Logout
   const RemoveAdminToken = () => {
@@ -90,6 +110,7 @@ export function AppProvider({ children }) {
         // for the admin
         StoreAdminToken,
         CheckAdminToken,
+        CheckAdminTokenServ,
         RemoveAdminToken,
       }}
     >

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { getBlockedUsers, blockUser, unblockUser } from '../../../lib/data'
 import { BanIcon, CheckIcon } from '../../../components/icons'
@@ -12,8 +12,9 @@ import { useBarberApp } from '../../../lib/AppContext'
 
 
 export default function AdminLoginPage() {
-    const {CheckCsrfToken} = useBarberApp()
+    const {StoreAdminToken, CheckAdminToken, CheckAdminTokenServ} = useBarberApp()
     const router = useRouter()
+    const [checkingAuth, setCheckingAuth] = useState(true)
     const {
       register,
       handleSubmit,
@@ -29,9 +30,32 @@ export default function AdminLoginPage() {
         email: '',
         password: ''
       },
-  
+
       mode: 'onBlur',
     })
+
+  useEffect(() => {
+    const checkAlreadyLoggedIn = async () => {
+      const hasToken = CheckAdminToken()
+
+      if (!hasToken) {
+        setCheckingAuth(false)
+        return
+      }
+
+      try {
+        await CheckAdminTokenServ()
+        router.replace('/wp-admin/reservations')
+        return
+      } catch (err) {
+        RemoveAdminToken()
+      } finally {
+        setCheckingAuth(false)
+      }
+    }
+
+    checkAlreadyLoggedIn()
+  }, [])
 
   const handleLogin = async (data) => {
     const toastId = toast.loading('Login In ...')
@@ -41,7 +65,7 @@ export default function AdminLoginPage() {
       await getCsrfCookie()
       const resp = await apiClient.post('/wp-admin/login', data)
       toast.success(resp.data.message || 'Login Seccessfully', { id: toastId })
-      await CheckCsrfToken(resp.data.token);
+      await StoreAdminToken(resp.data.token);
       router.push('/wp-admin/reservations')
     } catch (error) {
       console.error('Error fetching CSRF cookie:', error)
@@ -52,8 +76,35 @@ export default function AdminLoginPage() {
     }
 
     reset()
-    setError('')
+    // setError('')
     // setSuccess('Admin login successful.')
+  }
+
+  if (checkingAuth) {
+    return (
+        // Simple full page loading
+        <div className="flex min-h-[70vh] items-center justify-center px-4">
+          <div className="flex flex-col items-center gap-6">
+            {/* Spinner */}
+            <div className="relative h-16 w-16">
+              <div className="absolute inset-0 animate-spin rounded-full border-4 border-gray-300/20 border-t-paper" />
+              <div className="absolute inset-2 animate-spin rounded-full border-4 border-gray-300/10 border-b-paper/60 [animation-direction:reverse]" />
+            </div>
+
+            {/* Loading Text */}
+            <div className="flex flex-col items-center gap-2">
+              <span className="animate-pulse font-display text-lg font-semibold uppercase tracking-wide text-paper">
+                Loading
+              </span>
+              <div className="flex gap-1">
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-paper [animation-delay:0s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-paper [animation-delay:0.15s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-paper [animation-delay:0.3s]" />
+              </div>
+            </div>
+          </div>
+        </div>
+    )
   }
 
   return (
