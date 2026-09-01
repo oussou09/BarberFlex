@@ -29,7 +29,7 @@ export default function ContactForm() {
   })
 
   const OnSubmit = async (data) => {
-    const toastId = toast.loading('جاري إرسال الرسالة...')
+    const toastId = toast.loading('Connecting to the server...')
 
     try {
       await getCsrfCookie()
@@ -37,13 +37,13 @@ export default function ContactForm() {
       const resp = await apiClient.post('/storecontact', data)
 
       if (resp.status === 201 || resp.status === 200) {
-        toast.success(resp.data.message || 'تم الإرسال بنجاح!', { id: toastId })
+        toast.success(resp.data.message || 'Your message send seccessfully', { id: toastId })
         setSent(true)
         reset()
       }
     } catch (error) {
       console.error('Error sending message:', error)
-      const errorMessage = error.response?.data?.message || 'فشل إرسال الرسالة. يرجى المحاولة لاحقاً.'
+      const errorMessage = error.response?.data?.message || 'send has been failed please try again later'
       toast.error(errorMessage, { id: toastId })
     }
   }

@@ -83,9 +83,13 @@ const CheckAdminTokenServ = async () => {
     if (resp.status === 200) {
       return true
     }
-  } catch (error) {
-    RemoveAdminToken()
-    throw error
+  }catch (error) {
+    console.error('Token verification failed:', error)
+    // ONLY remove token if status is explicitly 401/403 (unauthorized)
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      RemoveAdminToken()
+    }
+    return false
   }
 }
 
@@ -108,6 +112,7 @@ const CheckAdminTokenServ = async () => {
         setIsAuthenticated,
 
         // for the admin
+        GetAdminToken,
         StoreAdminToken,
         CheckAdminToken,
         CheckAdminTokenServ,

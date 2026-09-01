@@ -69,10 +69,13 @@ class AdminActionsController extends Controller
 
         try {
             $slot = Reservations::findOrFail($dataValidator['SlotId']);
-            $slot->delete();
+            $slot->update([
+                'status' => 'cancelled'
+            ]);
+            // $slot->delete();
             return response()->json([
                 'message' => 'slot has been successfully cancelled'
-            ]);
+            ],200);
         }catch (\Exception $e) {
             return response()->json([
                 'status'  => 'error',

@@ -9,10 +9,11 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useBarberApp } from '../../../lib/AppContext'
+import styled from 'styled-components';
 
 
 export default function AdminLoginPage() {
-    const {StoreAdminToken, CheckAdminToken, CheckAdminTokenServ} = useBarberApp()
+    const {StoreAdminToken, CheckAdminToken, RemoveAdminToken, CheckAdminTokenServ} = useBarberApp()
     const router = useRouter()
     const [checkingAuth, setCheckingAuth] = useState(true)
     const {

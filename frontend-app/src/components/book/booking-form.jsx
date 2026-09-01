@@ -4,7 +4,7 @@ import { useEffect, useState, useContext } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
-
+import { toast } from 'sonner'
 import { getUpcomingDays } from '../../lib/data'
 import { CheckIcon, CalendarIcon, ClockIcon } from '../icons'
 import { getCsrfCookie, apiClient } from '../../lib/api'
@@ -32,10 +32,9 @@ export default function BookingForm() {
 
   const prefillDate = params.get('date')
   const prefillTime = params.get('time')
-
+  const [serverError, setServerError] = useState('')
   const [days, setDays] = useState([])
   const [record, setRecord] = useState(null)
-  const [serverError, setServerError] = useState('')
 
   const {
     register,
@@ -118,20 +117,19 @@ export default function BookingForm() {
   )
 
   const onSubmit = async (data) => {
+    const toastId = toast.loading('Connecting to the server...');
+    const UpdatedDate = parseInt(String(data.date).replaceAll('-', ''), 10)
+    const UpdatedTine = parseInt(String(data.time), 10)
     setServerError('')
-
-    data.date = parseInt(String(data.date).replaceAll('-', ''), 10)
-    data.time = parseInt(String(data.time), 10)
-
     try {
       await getCsrfCookie()
 
       const response = await apiClient.post('/storereservations', {
         ...data,
-        day: data.date,
-        houre: data.time,
+        day: UpdatedDate,
+        houre: UpdatedTine,
       })
-
+      toast.success(`Your slot ${data.date} ${data.time}:00 has been successfully booked.` || resp.data.message, { id: toastId });
       const reservationData = response.data?.reservation
       setRecord(reservationData)
 
@@ -148,13 +146,14 @@ export default function BookingForm() {
 
       RefetchReservations()
 
-    } catch (error) {
-      console.error('Reservation failed:', error)
-      console.log('Reservation data:', data)
+    } catch (err) {
+      console.error('Reservation failed:', err)
+      const errorMessage = error.response?.data?.message || 'Failed to send message. Please try again later.';
+      toast.error(errorMessage, { id: toastId });
 
-      const status = error.response?.status
-      const message = error.response?.data?.message
-      const backendErrors = error.response?.data?.errors
+      const status = err.response?.status
+      const message = err.response?.data?.message
+      const backendErrors = err.response?.data?.errors
 
       if (backendErrors?.full_name?.[0]) {
         setError('full_name', {

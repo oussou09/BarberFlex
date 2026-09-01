@@ -6,6 +6,7 @@ import { useBarberApp } from '../../../lib/AppContext'
 import { CloseIcon } from '../../../components/icons'
 import BlockedUsersPage from '../blocked/page'
 import { apiClient } from '../../../lib/api'
+import { toast } from 'sonner'
 
 
 const getFormattedDate = (offsetDays = 0) => {
@@ -20,13 +21,32 @@ const getFormattedDate = (offsetDays = 0) => {
 };
 
 export default function ReservationsPage() {
-  const {reservations = [], loadingReserv} = useBarberApp();
+  const {reservations = [], loadingReserv, GetAdminToken, RefetchReservations} = useBarberApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState(0)
+  const [selectedSlot, setSelectedSlot] = useState(null)
 
   const handleCancel = async () => {
     console.log('handle cancel for slot: ', selectedSlot);
-    const resp = await apiClient.post('/wp-admin/cancelslot', {SlotId:selectedSlot})
+    const toastId = toast.loading('Connecting to the server...');
+    try {
+      const token = GetAdminToken();
+      console.log('token: ', token)
+      const resp = await apiClient.post('/wp-admin/cancelslot',
+        {SlotId:selectedSlot.id},
+        {
+          headers:{
+            Authorization:`Bearer ${token}`
+          }
+        })
+      if (resp.status === 200) {
+        toast.success(`slot ${selectedSlot.day ? String(selectedSlot.day).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3') : '—'} ${selectedSlot.houre}:00 has been cencel successfully.` || resp.data.message, { id: toastId });
+        RefetchReservations()
+      }
+    } catch (err) {
+      console.error('Error sending message:', err)
+      const errorMessage = err.response?.data?.message || 'Failed to send message. Please try again later.';
+      toast.error(errorMessage, { id: toastId });
+    }
     setIsModalOpen(false);
   }
 
@@ -243,7 +263,7 @@ export default function ReservationsPage() {
                       type="button"
                       onClick={() => {
                         setIsModalOpen(true);
-                        setSelectedSlot(r.id);
+                        setSelectedSlot(r);
                         console.log('open model');
                       }}
                       className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-2 py-1.5 text-[10px] sm:px-3 sm:text-xs uppercase tracking-wider text-paper transition-colors hover:bg-gray-700"
@@ -328,7 +348,7 @@ export default function ReservationsPage() {
               type="button"
               onClick={() => {
                 setIsModalOpen(false);
-                setSelectedSlot(0);
+                setSelectedSlot(null);
               }}
               className="flex-1 rounded-md border border-gray-300/50 bg-gray-700/40 px-4 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-wider text-gray-100 transition-colors hover:border-paper hover:text-paper"
             >
