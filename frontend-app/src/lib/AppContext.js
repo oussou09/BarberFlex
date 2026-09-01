@@ -16,12 +16,14 @@ const defaultContextValue = {
 const AppContext = createContext(defaultContextValue);
 
 export function AppProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [reservations, setReservations] = useState([]);
   const [loadingReserv, setLoadingReserv] = useState(true);
 
+  const [BlockedUsers, setBlockedUsers] = useState([]);
+  const [loadingBlockedUsers, setLoadingBlockedUsers] = useState(true);
+
       // جلب البيانات مرة واحدة فقط عند إقلاع التطبيق
-    const fetchInitialData = async () => {
+    const fetchReservationlData = async () => {
         try {
             setLoadingReserv(true);
             const res = await apiClient.get('/reservations');
@@ -34,17 +36,34 @@ export function AppProvider({ children }) {
         }
     };
 
+    const fetchBlockedUsersData = async () => {
+      const token = GetAdminToken();
+      try {
+        setLoadingBlockedUsers(true);
+        const resp = await apiClient.get('/wp-admin/getblockedusers',{
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setBlockedUsers(resp.data?.blockedUsers || []);
+        console.log('Blocked Users fetched:', resp.data?.blockedUsers);
+      } catch (error) {
+        console.error("Error fetching blocked users data", error);
+      }finally {
+        setLoadingBlockedUsers(false);
+      }
+
+    }
+
     const RefetchReservations = () => {
-      fetchInitialData();
+      fetchReservationlData();
     };
 
-    useEffect(() => {
-        const token = localStorage.getItem('admin_token')
-        if (token) {
-          setIsAuthenticated(true)
-        }
+    const RefetchBlockedUsers = () => {
+      fetchBlockedUsersData();
+    }
 
-        fetchInitialData();
+    useEffect(() => {
+        RefetchReservations();
+        RefetchBlockedUsers();
     }, [])
 
 
@@ -104,12 +123,17 @@ const CheckAdminTokenServ = async () => {
   return (
     <AppContext.Provider
       value={{
-        fetchInitialData,
+        // for the reservations
+        fetchReservationlData,
         RefetchReservations,
         reservations,
         loadingReserv,
-        isAuthenticated,
-        setIsAuthenticated,
+
+        // for the blocked users
+        fetchBlockedUsersData,
+        RefetchBlockedUsers,
+        BlockedUsers,
+        loadingBlockedUsers,
 
         // for the admin
         GetAdminToken,

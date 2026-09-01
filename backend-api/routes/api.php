@@ -16,6 +16,8 @@ Route::prefix('wp-admin')->middleware(['auth:sanctum','abilities:role:admin'])->
     Route::get('/verifytoken',[AdminActionsController::class, 'TokenValidator']);
     //admin csrf token route
     Route::post('/cancelslot',[AdminActionsController::class, 'handleCancelSlot']);
+    Route::get('/getblockedusers',[AdminActionsController::class, 'GetBlockedUsers']);
+    Route::post('/storeblockusers',[AdminActionsController::class ,'handleBlockUsers']);
 });
 
 Route::post('/storecontact', [ContactController::class, 'StoreContact']);

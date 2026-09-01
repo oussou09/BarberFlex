@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminActions;
+use App\Models\BlockedUsers;
 use App\Models\Reservations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -88,17 +89,52 @@ class AdminActionsController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function handleBlockUsers(Request $request)
     {
-        //
+        $DataValidator = $request->validate([
+            'full_name' => 'nullable|string|max:255',
+            'phone' => 'required|string|max:20',
+            'email' => 'nullable|email',
+            'reason' => 'nullable|string|max:100',
+        ]);
+
+        try {
+            $blockedUser = BlockedUsers::create($DataValidator);
+            $blockedReservation = Reservations::where('phone', $DataValidator['phone'])->first();
+            $blockedReservation?->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $blockedUser,
+                'message' => 'User has been successfully blocked'
+            ],200);
+        }catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to block the user',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+
+    public function GetBlockedUsers()
     {
-        //
+        try {
+            $blockedUsers = BlockedUsers::all();
+            return response()->json([
+                'status' => 'success',
+                'blockedUsers' => $blockedUsers,
+                'message' => 'User has been successfully blocked'
+            ],200);
+        }catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to block the user',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+
     }
 
     /**

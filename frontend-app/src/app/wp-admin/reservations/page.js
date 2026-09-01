@@ -24,6 +24,7 @@ export default function ReservationsPage() {
   const {reservations = [], loadingReserv, GetAdminToken, RefetchReservations} = useBarberApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null)
+  const [selectedUser, setSelectedUser] = useState(null)
 
   const handleCancel = async () => {
     console.log('handle cancel for slot: ', selectedSlot);
@@ -48,6 +49,35 @@ export default function ReservationsPage() {
       toast.error(errorMessage, { id: toastId });
     }
     setIsModalOpen(false);
+  }
+
+  const handleBlockUser = async () => {
+    const toastId = toast.loading('Connecting to the server...');
+
+    try {
+      const token = GetAdminToken();
+      const resp = await apiClient.post('/wp-admin/storeblockusers',
+        {
+          full_name: selectedUser?.full_name || '',
+          phone: selectedUser?.phone || '',
+          email: selectedUser?.email || '',
+        },
+        {
+          headers:{
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+      toast.success(resp.data.message || 'User has been blocked successfully', { id: toastId });
+      setIsModalOpen(false);
+      RefetchReservations();
+    } catch (err) {
+      console.error('Error sending message:', err)
+
+      const errorMessage = err.response?.data?.message || 'Failed to block user. Please try again later.';
+      toast.error(errorMessage, { id: toastId });
+    }
+
   }
 
   // 1. Filter States
@@ -257,14 +287,15 @@ export default function ReservationsPage() {
                     {r.status}
                   </span>
                 </td>
-                <td className="px-3 py-3 text-right sm:px-4">
+                <td className="px-3 py-3 text-right sm:px-3">
                   {r.status === 'confirmed' ? (
                     <button
                       type="button"
                       onClick={() => {
-                        setIsModalOpen(true);
+                        setSelectedUser(null);
                         setSelectedSlot(r);
-                        console.log('open model');
+                        setIsModalOpen(true);
+                        console.log('open model cancel slot');
                       }}
                       className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-2 py-1.5 text-[10px] sm:px-3 sm:text-xs uppercase tracking-wider text-paper transition-colors hover:bg-gray-700"
                     >
@@ -278,10 +309,15 @@ export default function ReservationsPage() {
                 <td className="px-3 py-3 text-right sm:px-4">
                   <button
                     type='button'
-                    onClick={() => {<BlockedUsersPage />}}
+                    onClick={() => {
+                      setSelectedSlot(null);
+                      setSelectedUser(r);
+                      setIsModalOpen(true);
+                      console.log('open model block user');
+                    }}
                     className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-2 py-1.5 text-[10px] sm:px-3 sm:text-xs uppercase tracking-wider text-paper transition-colors hover:bg-gray-700"
                   >
-                    Block User
+                    Block
                   </button>
                 </td>
               </tr>
@@ -340,6 +376,17 @@ export default function ReservationsPage() {
           </h2>
           <p className="mt-2 text-center text-xs text-gray-100 sm:text-sm">
             This action cannot be undone. Please confirm to proceed.
+            <br/>
+            {selectedSlot && (
+              <span className="text-paper">
+                You are about to cancel the slot on {selectedSlot.day ? String(selectedSlot.day).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3') : '—'} at {selectedSlot.houre}:00.
+              </span>
+            )}
+            {selectedUser && (
+              <span className="text-paper">
+                You are about to block the user {selectedUser.full_name || '—'} with email {selectedUser.email || '—'} and phone {selectedUser.phone || '—'}.
+              </span>
+            )}
           </p>
 
           {/* Buttons */}
@@ -347,8 +394,9 @@ export default function ReservationsPage() {
             <button
               type="button"
               onClick={() => {
-                setIsModalOpen(false);
                 setSelectedSlot(null);
+                setSelectedUser(null);
+                setIsModalOpen(false);
               }}
               className="flex-1 rounded-md border border-gray-300/50 bg-gray-700/40 px-4 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-wider text-gray-100 transition-colors hover:border-paper hover:text-paper"
             >
@@ -356,7 +404,13 @@ export default function ReservationsPage() {
             </button>
             <button
               type="button"
-              onClick={handleCancel}
+              onClick={() => {
+                if(selectedUser){
+                  handleBlockUser()
+                }else{
+                  handleCancel()
+                }
+              }}
               className="flex-1 rounded-md bg-paper px-4 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-wider text-ink transition-transform hover:scale-[1.02]"
             >
               Confirm

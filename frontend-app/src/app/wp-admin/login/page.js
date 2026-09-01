@@ -9,7 +9,6 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useBarberApp } from '../../../lib/AppContext'
-import styled from 'styled-components';
 
 
 export default function AdminLoginPage() {

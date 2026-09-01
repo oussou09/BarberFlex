@@ -42,9 +42,7 @@ class ReservationsController extends Controller
             ]);
 
             try{
-
                 $reservation = Reservations::create($validationData);
-
             return response()->json([
                     'message' => 'Reservation stored successfully',
                     'reservation' => $reservation,
