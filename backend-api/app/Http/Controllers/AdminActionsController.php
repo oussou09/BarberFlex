@@ -117,6 +117,40 @@ class AdminActionsController extends Controller
         }
     }
 
+    /**
+     * UNBLOCK USER.
+     */
+    public function handleUnblockUser(Request $request)
+    {
+        $DataValidator = $request->validate([
+            'IdUser' => 'required|exists:blocked_users,id'
+        ]);
+
+        try {
+
+            $blockedUser = BlockedUsers::where('id', $DataValidator['IdUser'])->first();
+            if (!$blockedUser) {
+                return response()->json([
+                    'status' => 'errors',
+                    'message' => 'user not found'
+                ],404);
+            }
+
+            $blockedUser?->delete();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'user has been successfully unblocked'
+            ],200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to unblock the user',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function GetBlockedUsers()
     {
@@ -149,14 +183,6 @@ class AdminActionsController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, AdminActions $adminActions)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(AdminActions $adminActions)
     {
         //
     }

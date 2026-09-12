@@ -6,9 +6,9 @@ use App\Http\Controllers\AdminActionsController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ReservationsController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
 
 Route::post('/wp-admin/login', [AdminActionsController::class, 'LoginAdminPanel']);
 Route::prefix('wp-admin')->middleware(['auth:sanctum','abilities:role:admin'])->group(function () {
@@ -18,6 +18,7 @@ Route::prefix('wp-admin')->middleware(['auth:sanctum','abilities:role:admin'])->
     Route::post('/cancelslot',[AdminActionsController::class, 'handleCancelSlot']);
     Route::get('/getblockedusers',[AdminActionsController::class, 'GetBlockedUsers']);
     Route::post('/storeblockusers',[AdminActionsController::class ,'handleBlockUsers']);
+    Route::post('/handleUnblockUser', [AdminActionsController::class, 'handleUnblockUser']);
 });
 
 Route::post('/storecontact', [ContactController::class, 'StoreContact']);

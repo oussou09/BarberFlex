@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
 
       try {
         await CheckAdminTokenServ()
-        router.replace('/wp-admin/reservations')
+        router.replace('/wp-admin')
         return
       } catch (err) {
         RemoveAdminToken()
@@ -66,7 +66,7 @@ export default function AdminLoginPage() {
       const resp = await apiClient.post('/wp-admin/login', data)
       toast.success(resp.data.message || 'Login Seccessfully', { id: toastId })
       await StoreAdminToken(resp.data.token);
-      router.push('/wp-admin/reservations')
+      router.push('/wp-admin')
     } catch (error) {
       console.error('Error fetching CSRF cookie:', error)
 

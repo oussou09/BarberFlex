@@ -10,6 +10,8 @@ import { useForm } from 'react-hook-form'
 import { apiClient } from '../../../lib/api'
 
 export default function BlockedUsersPage() {
+  const [isModalOpen, setIsModalOpen] = useState (false)
+  const [blockedSelected, setBlockedSelected] = useState(null)
   const {fetchBlockedUsersData, RefetchBlockedUsers, BlockedUsers, loadingBlockedUsers, GetAdminToken} = useBarberApp()
   const {
     register,
@@ -53,9 +55,29 @@ export default function BlockedUsersPage() {
     }
   }
 
-  const handleUnblock = (id) => {
-    // TODO: Replace with real API call to Laravel backend.
-    setBlocked(unblockUser(id))
+  const handleUnblock = async () => {
+    const toastId = toast.loading('Unblocking user...');
+    const token = await GetAdminToken()
+
+    try {
+      const resp = await apiClient.post('/wp-admin/handleUnblockUser',
+        {IdUser : blockedSelected.id},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+      setIsModalOpen(false)
+      toast.success("User Unblocked successfully", {id: toastId})
+      RefetchBlockedUsers();
+    } catch (err) {
+      console.error('Error sending message:', err)
+      const errorMessage = err.response?.data?.message || 'Failed to send message. Please try again later.';
+      toast.error(errorMessage, { id: toastId });
+      setIsModalOpen(false)
+    }
+    setBlockedSelected(null)
   }
 
   return (
@@ -253,11 +275,10 @@ export default function BlockedUsersPage() {
                         <button
                           type="button"
                           // disabled={actionLoadingId === u.id}
-                          onClick={() => handleUnblock(u.id)}
+                          onClick={() => {setIsModalOpen(true); setBlockedSelected(u);}}
                           className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-3 py-1.5 text-xs uppercase tracking-wider text-paper transition-colors hover:bg-gray-700 disabled:opacity-50"
                         >
                           <CheckIcon size={14} />
-                          {/* {actionLoadingId === u.id ? 'Unblocking...' : 'Unblock'} */}
                           Unblock
                         </button>
                       </td>
@@ -269,6 +290,88 @@ export default function BlockedUsersPage() {
           )}
         </div>
       </div>
+      {isModalOpen && (
+    <>
+      {/* CONFIRMATION MODAL OVERLAY */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+        {/* Modal Card */}
+        <div className="w-full max-w-md rounded-2xl border border-gray-300/50 bg-gray-700/40 p-5 sm:p-6 backdrop-blur-sm">
+          {/* Icon */}
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-paper/10 sm:h-14 sm:w-14">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-paper sm:hidden"
+            >
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="hidden text-paper sm:block"
+            >
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          </div>
+
+          {/* Title & Message */}
+          <h2 className="mt-4 text-center font-display text-base font-semibold uppercase tracking-wide text-paper sm:text-lg">
+            Are you sure?
+          </h2>
+          <p className="mt-2 text-center text-xs text-gray-100 sm:text-sm">
+            This action cannot be undone. Please confirm to proceed.
+            <br/>
+            {blockedSelected && (
+              <span className="text-paper">
+                You are about to block the user {blockedSelected?.full_name || '—'} with email {blockedSelected?.email || '—'} and phone {blockedSelected?.phone || '—'}.
+              </span>
+            )}
+          </p>
+
+          {/* Buttons */}
+          <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setBlockedSelected(null);
+                setIsModalOpen(false);
+              }}
+              className="flex-1 rounded-md border border-gray-300/50 bg-gray-700/40 px-4 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-wider text-gray-100 transition-colors hover:border-paper hover:text-paper"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                handleUnblock()
+              }}
+              className="flex-1 rounded-md bg-paper px-4 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-wider text-ink transition-transform hover:scale-[1.02]"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  )}
     </div>
   )
 }

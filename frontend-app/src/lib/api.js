@@ -57,9 +57,21 @@ let isRedirecting = false;
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error.response?.status;
     const message = error.response?.data?.message ?? "";
+    const originalRequest = error.config;
+
+    // Handle 419 Page Expired (CSRF token mismatch) - auto-refresh and retry once
+    if (status === 419 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        await getCsrfCookie();
+        return apiClient(originalRequest);
+      } catch (csrfError) {
+        return Promise.reject(csrfError);
+      }
+    }
 
     if (isRedirecting || typeof window === "undefined") {
       return Promise.reject(error);

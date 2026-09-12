@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { apiClient } from "./api";
+import { apiClient, getCsrfCookie } from "./api";
 
 const defaultContextValue = {
   reservations: [],
@@ -62,8 +62,16 @@ export function AppProvider({ children }) {
     }
 
     useEffect(() => {
-        RefetchReservations();
-        RefetchBlockedUsers();
+        const initaliseApp = async () => {
+          try {
+            await getCsrfCookie();
+            RefetchReservations();
+            RefetchBlockedUsers();
+          } catch (err) {
+            console.error("Failed to initialize app data: ", err);
+          }
+        }
+        initaliseApp()
     }, [])
 
 
