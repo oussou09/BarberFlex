@@ -11,7 +11,7 @@ const LINKS = [
 ]
 
 export default function AdminNav() {
-  const {RemoveAdminToken} = useBarberApp();
+  const {RemoveAdminToken, CheckAdminToken} = useBarberApp();
   const pathname = usePathname();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,6 +50,8 @@ export default function AdminNav() {
             )
           })}
 
+          {CheckAdminToken() && (
+
           <button
             type="button"
             onClick={() => { setIsModalOpen(true) }}
@@ -75,6 +77,7 @@ export default function AdminNav() {
 
             Logout
           </button>
+          )}
 
           <Link
             href="/"
